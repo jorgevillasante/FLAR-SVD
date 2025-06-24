@@ -59,18 +59,6 @@ We compare our approach to multiple SOTA SVD compression apporaches including [P
 |                      | **ours**                   | **61.6**   | **21.8** | **76.1** | **34.94** |
 #### Reproduce Results
 To compress a model, you may pick and choose different compression and search methods from the range that is offered. We provide example commands to replicate the results of the paper. Note that the code was refactored for the public release and might have slight deviations from the reported results.
-<style>
-  /* Hide list bullets */
-  ul {
-      list-style-type: +; /* Remove bullets */
-      padding-left: 25px; /* Remove default padding */
-  }
-
-  /* Indentation for nested lists */
-  li {
-      margin-left: 20px; /* Adjust indentation as needed */
-  }
-</style>
 <details><!---ConvNeXt-->
   <summary>ConvNext-Base</summary>
   <ul>
