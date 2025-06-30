@@ -20,43 +20,43 @@ We compare our approach to multiple SOTA SVD compression apporaches including [P
 |----------------------|----------------------------|------------|--------|---------|-----------|
 | ConvNext-Base        | Baseline                   | 88.6       | 30.8   | 85.8    | 102.48    |
 |                      | PELA                       | 46.6       | 15.9   | 19.7    | 63.98     |
-|                      | FW-SVD                     | 46.4       | 16.1   | 64.0    | 64.64     |
-|                      | ASVD                       | 46.5       | 16.3   | 60.6    | 63.65     |
+|                      | FW-SVD                     | 46.5       | 16.3   | 66.9    | 63.36     |<!--| 46.4       | 16.1   | 64.0    | 64.64     |-->
+|                      | ASVD                       | 46.2       | 16.4   | 64.1    | 64.71     |<!--| 46.5       | 16.3   | 60.6    | 63.65     |-->
 |                      | SVD-LLM (blockwise)        | 46.6       | 15.9   | 63.2    | 62.40     |
 |                      | SVD-LLM (one-shot)         | 46.6       | 15.9   | 72.0    | 63.51     |
-|                      | **ours**                   | **46.5**   | **16.0** | **74.6** | **59.99** |
+|                      | **ours**                   | **47.9**   | **15.8** | **74.6** | **60.52** |<!--| **46.5**   | **16.0** | **74.6** | **59.99** |-->
 |----------------------|----------------------------|------------|--------|---------|-----------|
 | DeiT-Base            | Baseline                   | 86.6       | 33.7   | 81.8    | 58.83     |
 |                      | PELA                       | 44.1       | 17.0   | 61.0    | 40.65     |
-|                      | FW-SVD                     | 44.3       | 17.1   | 73.0    | 40.68     |
-|                      | ASVD                       | 43.6       | 16.8   | 68.7    | 40.53     |
+|                      | FW-SVD                     | 44.0       | 16.9   | 73.6    | 41.59     |<!--|  44.3       | 17.1   | 73.0    | 40.68     |-->
+|                      | ASVD                       | 43.9       | 16.9   | 71.8    | 41.37     |<!--|  43.6       | 16.8   | 68.7    | 40.53     |-->
 |                      | SVD-LLM (blockwise)        | 44.1       | 17.0   | 68.6    | 40.64     |
 |                      | SVD-LLM (one-shot)         | 44.1       | 17.0   | 70.4    | 40.16     |
-|                      | **ours**                   | **44.8**   | **17.3** | **78.9** | **40.14** |
+|                      | **ours**                   | **43.7**   | **16.8** | **78.4** | **39.83** |<!--| **ours**                   | **44.8**   | **17.3** | **78.9** | **40.14** |-->
 |----------------------|----------------------------|------------|--------|---------|-----------|
 | Swin-Large           | Baseline                   | 196.5      | 68.1   | 86.2    | 124.9     |
 |                      | PELA                       | 121.0      | 41.4   | 71.0    | 98.02     |
-|                      | FW-SVD                     | 120.9      | 38.5   | 76.6    | 91.92     |
-|                      | ASVD                       | 120.8      | 39.3   | 75.6    | 94.68     |
+|                      | FW-SVD                     | 121.2      | 38.1   | 74.6    | 94.04     |<!--|  120.9      | 38.5   | 76.6    | 91.92     |-->
+|                      | ASVD                       | 121.4      | 39.8   | 76.6    | 94.86     |<!--|  120.8      | 39.3   | 75.6    | 94.68     |-->
 |                      | SVD-LLM (blockwise)        | 121.0      | 41.4   | 80.1    | 97.70     |
 |                      | SVD-LLM (one-shot)         | 121.0      | 41.4   | 81.5    | 98.47     |
-|                      | **ours**                   | **120.9**  | **39.15** | **82.4** | **92.33** |
+|                      | **ours**                   | **118.5**  | **38.1** | **81.7** | **90.84** |<!--| **120.9**  | **39.15** | **82.4** | **92.33** |-->
 |----------------------|----------------------------|------------|--------|---------|-----------|
 | DeiT-III-Large       | Baseline                   | 304.4      | 119.4  | 86.8    | 196.50    |
 |                      | PELA                       | 153.2      | 59.8   | 50.7    | 130.74    |
-|                      | FW-SVD                     | 153.8      | 60.0   | 70.1    | 133.68    |
-|                      | ASVD                       | 153.2      | 59.8   | 59.2    | 132.49    |
+|                      | FW-SVD                     | 153.4      | 59.9   | 68.3    | 128.39    |<!--| 153.8      | 60.0   | 70.1    | 133.68    |-->
+|                      | ASVD                       | 153.1      | 59.8   | 51.4    | 131.32    |<!--|  153.2      | 59.8   | 59.2    | 132.49     |-->
 |                      | SVD-LLM (blockwise)        | 153.2      | 59.8   | 68.9    | 130.03    |
 |                      | SVD-LLM (one-shot)         | 153.2      | 59.8   | 74.5    | 133.37    |
-|                      | **ours**                   | **141.9**  | **59.1** | **78.0** | **125.96** |
+|                      | **ours**                   | **150.7**  | **58.8** | **77.7** | **125.26** |<!--| **141.9**  | **59.1** | **78.0** | **125.96** |-->
 |----------------------|----------------------------|------------|--------|---------|-----------|
 | MambaVision          | Baseline                   | 97.7       | 30.0   | 84.2    | 45.5      |
 |                      | PELA                       | 59.0       | 22.3   | 73.3    | 37.31     |
-|                      | FW-SVD                     | 58.7       | 22.6   | 74.8    | 37.00     |
-|                      | ASVD                       | 59.0       | 22.6   | 75.0    | 37.27     |
+|                      | FW-SVD                     | 59.4       | 22.5   | 75.2    | 36.80     |<!--|  58.7       | 22.6   | 74.8    | 37.00     |-->
+|                      | ASVD                       | 59.0       | 22.4   | 74.5    | 37.35     |<!--|  59.0       | 22.6   | 75.0    | 37.27     |-->
 |                      | SVD-LLM (blockwise)        | 59.0       | 22.3   | 72.6    | 37.38     |
 |                      | SVD-LLM (one-shot)         | 59.0       | 22.3   | 74.2    | 37.44     |
-|                      | **ours**                   | **61.6**   | **21.8** | **76.1** | **34.94** |
+|                      | **ours**                   | **60.8**   | **21.3** | **76.5** | **34.34** |<!--| **61.6**   | **21.8** | **76.1** | **34.94** |-->
 #### Reproduce Results
 To compress a model, you may pick and choose different compression and search methods from the range that is offered. We provide example commands to replicate the results of the paper. Note that the code was refactored for the public release and might have slight deviations from the reported results.
 <details><!---ConvNeXt-->
@@ -83,7 +83,7 @@ To compress a model, you may pick and choose different compression and search me
     </details>
     <details>
       <summary>FLAR-SVD</summary>
-      <ul><pre><code>python compress.py --svd_method flar_svd --search_method flar_svd --error_threshold 0.011 --stage_name stages --calib_bs=128 --seed=280 --blockwise --model convnext_base.fb_in22k_ft_in1k > LOGS/ConvNext_FLAR_50.log</code></pre></ul>
+      <ul><pre><code>python compress.py --svd_method flar_svd --search_method flar_svd --compression_target 0.53 --stage_name stages --calib_bs=128 --seed=280 --blockwise --model convnext_base.fb_in22k_ft_in1k > LOGS/ConvNext_FLAR_50.log</code></pre></ul><!-- error_threshold 0.011 -->
     </details>
   </ul>
 </details>
@@ -112,7 +112,7 @@ To compress a model, you may pick and choose different compression and search me
     </details>
     <details>
       <summary>FLAR-SVD</summary>
-      <ul><pre><code>python compress.py --svd_method flar_svd --search_method flar_svd --error_threshold 0.015 --calib_bs=128 --seed=280 --blockwise --model deit_base_patch16_224.fb_in1k > LOGS/DeiT_FLAR_50.log</code></pre></ul>
+      <ul><pre><code>python compress.py --svd_method flar_svd --search_method flar_svd --compression_target 0.51 --calib_bs=128 --seed=280 --blockwise --model deit_base_patch16_224.fb_in1k > LOGS/DeiT_FLAR_50.log</code></pre></ul><!-- error_threshold 0.015 -->
     </details>
   </ul>
 </details>
@@ -141,7 +141,7 @@ To compress a model, you may pick and choose different compression and search me
     </details>
     <details>
       <summary>FLAR-SVD</summary>
-      <ul><pre><code>python compress.py --svd_method flar_svd --search_method flar_svd --error_threshold 0.005 --stage_name layers --calib_bs=64 --seed=280 --blockwise --model swin_large_patch4_window7_224.ms_in22k_ft_in1k > LOGS/SwinL_FLAR_60.log</code></pre></ul>
+      <ul><pre><code>python compress.py --svd_method flar_svd --search_method flar_svd --compression_target 0.6 --stage_name layers --calib_bs=64 --seed=280 --blockwise --model swin_large_patch4_window7_224.ms_in22k_ft_in1k > LOGS/SwinL_FLAR_60.log</code></pre></ul><!-- error_threshold 0.005 -->
     </details>
   </ul>
 </details>
@@ -170,7 +170,7 @@ To compress a model, you may pick and choose different compression and search me
     </details>
     <details>
       <summary>FLAR-SVD</summary>
-      <ul><pre><code>python compress.py --svd_method flar_svd --search_method flar_svd --error_threshold 0.0075 --calib_bs=128 --seed=280 --blockwise --model deit3_large_patch16_224.fb_in22k_ft_in1k > LOGS/DeiTL_FLAR_50.log</code></pre></ul>
+      <ul><pre><code>python compress.py --svd_method flar_svd --search_method flar_svd --compression_target 0.5 --calib_bs=128 --seed=280 --blockwise --model deit3_large_patch16_224.fb_in22k_ft_in1k > LOGS/DeiTL_FLAR_50.log</code></pre></ul><!-- error_threshold 0.0075 -->
     </details>
   </ul>
 </details>
@@ -199,7 +199,7 @@ To compress a model, you may pick and choose different compression and search me
     </details>
     <details>
       <summary>FLAR-SVD</summary>
-      <ul><pre><code>python compress.py --svd_method flar_svd --search_method flar_svd --error_threshold 0.006 --stage_name levels --blockwise --calib_bs=128 --seed=280 --model mamba_vision_B > LOGS/Mamba_FLAR_55.log</code></pre></ul>
+      <ul><pre><code>python compress.py --svd_method flar_svd --search_method flar_svd --compression_target 0.6 --stage_name levels --blockwise --calib_bs=128 --seed=280 --model mamba_vision_B > LOGS/Mamba_FLAR_55.log</code></pre></ul><!-- error_threshold 0.006 -->
     </details>
   </ul>
 </details>

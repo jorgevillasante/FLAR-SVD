@@ -21,7 +21,7 @@ DEFAULT_PRECISION = 2
 
 
 def calculate_flops(
-    model, input_shape=(1, 3, 224, 224), detail=False, args=[], kwargs={}
+    model, input_shape=(1, 3, 224, 224), detail=False, print_results=True, args=[], kwargs={}
 ):
 
     """Returns the total floating-point operations, MACs, and parameters of a model."""
@@ -29,7 +29,7 @@ def calculate_flops(
     forward_mode = "forward"
     include_backPropagation = False
     compute_bp_factor = 2.0
-    print_results = True
+    # print_results = True
     output_as_string = True
     output_precision = 2
     output_unit = None

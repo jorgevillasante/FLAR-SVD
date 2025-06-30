@@ -85,15 +85,17 @@ class ASVDSearch(BaseSearch):
         dev = torch.device(torch.cuda.current_device())
         model = model.to(dev)
         model = model.eval()
+        loss_fc = nn.CrossEntropyLoss()
+        ppl = torch.tensor(0.0, device=dev)
         with torch.no_grad():
             for batch_idx, (samples, targets) in enumerate(self.eval_data):
                 model_inputs, labels = samples.to(dev), targets.to(dev)
                 logits = model(model_inputs)
                 del model_inputs
-                loss_fc = nn.CrossEntropyLoss()
                 loss = loss_fc(logits, labels)
-                ppl = torch.exp(loss)
-                del loss, logits, loss_fc
+                ppl += loss
+                # ppl = torch.exp(loss)
+                del loss, logits
 
                 with torch.cuda.device(torch.cuda.current_device()):
                     torch.cuda.empty_cache()
