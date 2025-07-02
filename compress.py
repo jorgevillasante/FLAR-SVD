@@ -8,7 +8,7 @@ import argparse
 import random
 from pathlib import Path
 
-# import models
+import models
 
 import numpy as np
 import torch
@@ -157,7 +157,7 @@ def get_args_parser():
     parser.add_argument(
         "--svd_method",
         default="flar_svd",
-        choices=["flar_svd", "svd_llm", "svd_llmp", "pela", "svd", "fwsvd", "asvd"],
+        choices=["flar_svd", "svd_llm", "pela", "svd", "fwsvd", "asvd"],
         type=str,
         help="SVD compression method to use.",
     )
@@ -174,10 +174,17 @@ def get_args_parser():
     )
     # SVD settings
     parser.add_argument("--compression_target", default=0.5, type=float, help="compression target ratio")
+    parser.add_argument(
+        "--target_metric",
+        default="params",
+        choices=["params", "flops"],
+        type=str,
+        help="Metric to optimize based on target.",
+    )
     # search settings
     parser.add_argument("--blockwise", action="store_true", default=False, help="whether to do blockwise search or not.")
     # FLAR SVD search settings
-    parser.add_argument("--error_threshold", default=0.01, type=float, help="error threshold for flar_svd search")
+    parser.add_argument("--error_threshold", default=None, type=float, help="error threshold for flar_svd search")
     parser.add_argument("--stage_name", default="layers", type=str, help="Name of stages in model to compress.")
     parser.add_argument("--progressive_comp", action="store_true", help="Use progressive compression")
     # ASVD settings
@@ -294,11 +301,11 @@ def main(args):
         svd_method_args["alpha"] = args.asvd_alpha
     
     search_args = {}
+    search_args["ratio_target"] = args.compression_target
     if args.search_method == "flar_svd":
         search_args["threshold"] = args.error_threshold
+        search_args["target_metric"] = args.target_metric
         search_args["progressive_comp"] = args.progressive_comp
-    else:
-        search_args["ratio_target"] = args.compression_target
     if args.blockwise:
         search_args["stage_name_in_current_model"] = args.stage_name
 

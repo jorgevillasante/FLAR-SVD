@@ -22,10 +22,10 @@ class BaseFactorization:
         print("\nNo scaling method implemented.")
         pass
 
-    def factorize_matrix(self, matrix, name, rank=-1, ratio=-1) -> FactorizedMatrix:
+    def factorize_matrix(self, matrix, name, rank=-1, ratio=-1, verbose=True) -> FactorizedMatrix:
         # function that applies the svd technique to a single matrix and return the
         # compressed one (+ meta data?)
-        print(f"Factorizing {name} matrix")
+        print(f"Factorizing {name} matrix") if verbose else None
         if rank == -1 and ratio == -1:
             print(f"Warning: {name} rank or ratio must be defined!")
             return
@@ -90,7 +90,7 @@ class BaseFactorization:
         return SeqSVD(module_l, module_r, original_module.bias if hasattr(original_module, "bias")
                       else None).to(dev)
 
-    def factorize_model(self, uncom_model, rank_dict, name_omit) -> dict:
+    def factorize_model(self, uncom_model, rank_dict, name_omit, verbose=True) -> dict:
         """
         Apply low-rank decomposition to the model in place. Note that name omit
         is supported implicitly as removing or not mentioning something in the
@@ -113,7 +113,7 @@ class BaseFactorization:
             if all(omit not in name for omit in name_omit)
             and isinstance(module_sub, nn.Linear)
         }
-        print(rank_dict)
+        print(rank_dict) if verbose else None
         for name, module_sub in copied_modules.items():
             # condition for not applying low rank
             if (
@@ -129,13 +129,14 @@ class BaseFactorization:
                 rank=rank_dict[name] if isinstance(rank_dict[name], int) else -1,
                 ratio=rank_dict[name] if isinstance(rank_dict[name], float) else -1,
                 name=name,
+                verbose=verbose,
             )
 
             svd_replacement = self.create_factorized_sequential(
                 factorized_matrix=factorized, original_module=module_sub
             )
 
-            print(f"Applying low rank on {name:^10}, rank {rank_dict[name]}")
+            print(f"Applying low rank on {name:^10}, rank {rank_dict[name]}") if verbose else None
 
             base, localname = model, name
             while "." in localname:

@@ -14,9 +14,12 @@ import torch.nn.functional as F
 from timm.loss import SoftTargetCrossEntropy
 from torch import nn
 
+# Change relative import to absolute import
+from all_utils.flops_counter import calculate_flops
+
 from ..factorization._interface import BaseFactorization
 from ._interface import BaseSearch
-
+from .uniform import UNIFORMSearch
 
 class LastFeatureHook:
     def __init__(self, model: nn.Module):
@@ -101,11 +104,14 @@ class LayerDecomposition:
 
 
 class FLAR_SVDSearch(BaseSearch):
+    # TODO: add option for iterative compression of the reference model.
     def __init__(
         self,
         eval_data,
         name_omit: List[str] = None,
         threshold: float = 0.01,
+        target_metric = "params",
+        ratio_target: float = 0.5,
         progressive_comp: bool = False,
         stage_name_in_current_model: str = "stages",
         mixup_fn=None,
@@ -117,6 +123,8 @@ class FLAR_SVDSearch(BaseSearch):
         self.name_omit = name_omit or []
         self.dev = torch.device(torch.cuda.current_device())
         self.threshold = threshold
+        self.target_metric = target_metric
+        self.ratio_target = ratio_target if threshold is None else None
         self.progressive_comp = progressive_comp
         self.stage_name_in_current_model = stage_name_in_current_model
         if latency_predictor_path:
@@ -250,7 +258,6 @@ class FLAR_SVDSearch(BaseSearch):
                     CE_loss = self.criteria(logit_s, target).to(self.dev)
 
                 # Restore original weight
-                # print(layer_name, block_search_dict[layer_name].next_to_eval, dict(model_copy.named_modules())[layer_name].weight.data[0,0:8])
                 compressed_layer.weight.data.copy_(original_weight)
 
                 del logit_s, logit_t, original_weight, compressed_layer
@@ -282,31 +289,6 @@ class FLAR_SVDSearch(BaseSearch):
             if block_dict[name].Lo_k >= block_dict[name].Up_k:
                 continue
             last_evaluated = block_dict[name].next_to_eval
-
-            # Predict latency for given rank setting and update it until
-            # it meets the constraint.
-            if self.latency_predictor is not None:
-                rank_slower = True
-                eval_rank = last_evaluated
-                while rank_slower:
-                    if block_dict[name].Lo_k >= block_dict[name].Up_k:
-                        rank_slower = False
-                        continue
-                    input_shape = block_dict[name].input_shape
-                    lat_predict = self._get_latency_pred(input_shape, eval_rank)
-                    # Check if the predicted latency lower than the uncompressed layer
-                    if lat_predict.item() >= 1.0 or lat_predict.item() <= 0:
-                        # decrease upper bound to see if it can meet the latency criteria
-                        block_dict[name].Up_k = eval_rank // 8
-                        block_dict[name].T_err = ErrorMetrics()  # Reset error metrics
-                        mid = (block_dict[name].Up_k + block_dict[name].Lo_k) // 2
-                        block_dict[name].next_to_eval = mid * 8
-                        eval_rank = block_dict[name].next_to_eval
-                    else:
-                        rank_slower = False
-                if last_evaluated != block_dict[name].next_to_eval:
-                    # rank was rejected for slow latency. Evaluation must be done again.
-                    continue
 
             # check error criteria
             if block_dict[name].T_err.feat_mse <= self.threshold:
@@ -367,6 +349,7 @@ class FLAR_SVDSearch(BaseSearch):
         return groups, groups_layer_names
 
     def search(self, model: nn.Module) -> Dict[str, int]:
+        self._init_threshold(model) if self.ratio_target else None
         compression_dict = {}
         groups, groups_layer_names = self._tile_model_in_groups(model, group_size=4)
         for group, layer_names in zip(groups, groups_layer_names):
@@ -374,10 +357,14 @@ class FLAR_SVDSearch(BaseSearch):
                 model=model, group=group, layer_names=layer_names
             )
             compression_dict.update(blk_layerwise_compression_dict)
+        if self.ratio_target:
+            # Interpolate ranks to ensure target ratio is met
+            compression_dict = self._interpolate_ranks(compression_dict, model)
 
         return compression_dict
 
     def search_blockwise(self, model: nn.Module, stage_name: str, calib_data=None):
+        self._init_threshold(model) if self.ratio_target else None
         compression_dict = {}
         blocks, blocks_layer_names = self.get_model_blocks(model, stage_name)
         for block, layer_names in zip(blocks, blocks_layer_names):
@@ -385,6 +372,9 @@ class FLAR_SVDSearch(BaseSearch):
                 model=model, group=block, layer_names=layer_names
             )
             compression_dict.update(blk_layerwise_compression_dict)
+        if self.ratio_target:
+            # Interpolate ranks to ensure target ratio is met
+            compression_dict = self._interpolate_ranks(compression_dict, model)
 
         return compression_dict
 
@@ -425,3 +415,109 @@ class FLAR_SVDSearch(BaseSearch):
                 blk_search_dict[key].next_to_eval = blk_search_dict[key].best_rank
                 self._compress_layer(key, model, blk_search_dict)
         return blk_layerwise_compression_dict
+
+    def _init_threshold(self, model: nn.Module):
+        '''
+        Initializes the threshold for the search initialized by a uniform search to
+        determine the expected compression ratio and the expected FLOPS reduction.
+        '''
+        uniform_search = UNIFORMSearch(
+            eval_data=self.eval_data,
+            mixup_fn=self.mixup_fn,
+            name_omit=self.name_omit,
+            ratio_target=self.ratio_target,
+            stage_name_in_current_model=self.stage_name_in_current_model,
+        )
+        layer_compression_dict = uniform_search.search(model)
+        model_cp = deepcopy(model)
+        self.lrd_method.factorize_model(
+            model_cp, layer_compression_dict, name_omit=self.name_omit
+        )
+        self.full_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+        self.full_flops = float(calculate_flops(model, print_results=False)[0].split(" ")[0])
+        self.expected_params = self.full_params * self.ratio_target
+        actual_params = sum(p.numel() for p in model_cp.parameters() if p.requires_grad)
+        self.actual_flops = float(calculate_flops(model_cp, print_results=False)[0].split(" ")[0])
+        self.corrected_ratio = (self.ratio_target*(self.full_params + self.expected_params) - (actual_params - self.expected_params)) / (self.full_params - actual_params)
+        self.corrected_ratio = self.ratio_target - (1 - self.ratio_target)*(actual_params - self.expected_params) / (self.full_params - actual_params)
+        self.expected_flops = self.actual_flops - (self.full_flops - self.actual_flops)*(self.ratio_target - self.corrected_ratio) / (1 - self.ratio_target)
+        print(f"Corrected ratio: {self.corrected_ratio:.3f}")
+
+        hook_reg = LastFeatureHook(model)
+        hook_reg_cp = LastFeatureHook(model_cp)
+        hook_reg.attach_hooks()
+        hook_reg_cp.attach_hooks()
+        model = model.eval().to(self.dev)
+        model_cp = model_cp.eval().to(self.dev)
+        # feat_mse = torch.zeros(1, device=self.dev)
+        feat_mse = 0
+
+        # TODO!! evaluate if its better to obtain the error per changed layer
+        # or a hollistic one (currently implemented) 
+        for data, target in self.eval_data:
+            with torch.cuda.device(self.dev):
+                torch.cuda.empty_cache()
+            if self.mixup_fn is not None:
+                data, target = self.mixup_fn(data, target)
+            with torch.no_grad():
+                data, target = data.to(self.dev), target.to(self.dev)
+                model(data)
+                model_cp(data)
+
+                # Obtain normalized losses for later comparison
+                L_fm = F.mse_loss(model.last_feat, model_cp.last_feat)
+                L_fm = L_fm / torch.mean(model_cp.last_feat**2)
+                feat_mse += L_fm
+
+        # calculate average losses for all layers in the block
+        n_batch_tensor = torch.tensor(len(self.eval_data), device=self.dev)
+        feat_mse /= n_batch_tensor.item()
+        hook_reg.clear_hooks()
+        hook_reg_cp.clear_hooks()
+
+        n_layers = 0
+        for name, layer in dict(model.named_modules()).items():
+            if any(omit in name for omit in self.name_omit):
+                continue
+            if isinstance(layer, nn.Linear):
+                n_layers += 1
+        self.threshold = feat_mse/n_layers if n_layers > 0 else 0
+        print(f"Number of layers in model: {n_layers}")
+        print(f"Initial error threshold: {self.threshold}\nLast feat error: {feat_mse.item()}")
+
+    def _interpolate_ranks(
+        self, layerwise_rank_dict: Dict[str, int], model: nn.Module
+    ) -> Dict[str, int]:
+        """
+        Interpolates the ranks for the layers based on the layerwise_rank_dict.
+        This is used to ensure that the ranks are evenly distributed across the layers.
+        """
+        tmp_model = deepcopy(model)
+        self.lrd_method.factorize_model(tmp_model, layerwise_rank_dict, name_omit=self.name_omit, verbose=False)
+        num_params = sum(p.numel() for p in tmp_model.parameters())
+        num_flops = float(calculate_flops(tmp_model, print_results=False)[0].split(" ")[0])
+
+        if self.target_metric == "params":
+            curr_rate = self.corrected_ratio - (1 - self.corrected_ratio) * (self.expected_params - num_params) / (self.full_params - self.expected_params)
+        else:    # by default match flops
+            curr_rate = self.corrected_ratio - (1 - self.corrected_ratio) * (self.expected_flops - num_flops) / (self.full_flops - self.expected_flops)
+        print(f"Current rate: {curr_rate}")
+        print(f"Correction: {(self.corrected_ratio - curr_rate)*100} %")
+
+        for layer_name, rank in layerwise_rank_dict.items():
+            # Adjust rank based on target compression ratio
+            if rank != -1:
+                adjusted_rank = rank * self.corrected_ratio / curr_rate
+                layerwise_rank_dict[layer_name] = int((adjusted_rank // 8) * 8) # ensure divisibility by 8
+                
+                # Filter out those ranks that do not comply with our requirements.
+                if layer_name in self.lrd_method.input_shapes:
+                    input_shape = self.lrd_method.input_shapes[layer_name]
+                    lat_predict = self._get_latency_pred(input_shape, layerwise_rank_dict[layer_name])
+                    # Check if the predicted latency lower than the uncompressed layer
+                    if lat_predict.item() >= 1.0 or lat_predict.item() <= 0:
+                        layerwise_rank_dict[layer_name] = -1
+        
+        del tmp_model
+
+        return layerwise_rank_dict
