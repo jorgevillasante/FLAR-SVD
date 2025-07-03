@@ -250,12 +250,6 @@ Download the [ImageNet-1K](http://image-net.org/) dataset and structure the data
 #### Model Preparation (MambaVision)
 To test the approach on MambaVision, you shall copy the contents of [this folder](https://github.com/NVlabs/MambaVision/tree/main/mambavision/models) to the models/mambavision folder of this repository. You may also add other model sources into the *models* folder.
 
-## Evaluation
-Run the following command to evaluate a pre-trained SHViT-S4 on ImageNet-1K validation set with a single GPU:
-```bash
-python main.py --eval --model shvit_s4 --resume ./shvit_s4.pth --data-path $PATH_TO_IMAGENET --input-size 256
-```
-
 ## Citation
 If our work or code help your work, please cite our paper:
 ```
