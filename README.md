@@ -14,7 +14,7 @@ Advanced deep learning architectures have achieved exceptional prediction perfor
 </details>
 
 ## Model Compression with SVD
-### Image Classification
+### Image Classification (see run commands for all below the table)
 We compare our approach to multiple SOTA SVD compression apporaches including [PELA](https://openaccess.thecvf.com/content/CVPR2024/html/Guo_PELA_Learning_Parameter-Efficient_Models_with_Low-Rank_Approximation_CVPR_2024_paper.html), [FW-SVD](https://arxiv.org/abs/2207.00112) with ASVD search, [ASVD](https://arxiv.org/abs/2312.05821) and [SVD-LLM](https://arxiv.org/abs/2403.07378).
 | Model                | Method                     | Params (M) | GFLOPs | Top-1 ↑ | Latency ↓ |
 |----------------------|----------------------------|------------|--------|---------|-----------|
