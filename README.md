@@ -14,7 +14,7 @@ Advanced deep learning architectures have achieved exceptional prediction perfor
 </details>
 
 ## Model Compression with SVD
-### Image Classification
+### Image Classification (see run commands for all below the table)
 We compare our approach to multiple SOTA SVD compression apporaches including [PELA](https://openaccess.thecvf.com/content/CVPR2024/html/Guo_PELA_Learning_Parameter-Efficient_Models_with_Low-Rank_Approximation_CVPR_2024_paper.html), [FW-SVD](https://arxiv.org/abs/2207.00112) with ASVD search, [ASVD](https://arxiv.org/abs/2312.05821) and [SVD-LLM](https://arxiv.org/abs/2403.07378).
 | Model                | Method                     | Params (M) | GFLOPs | Top-1 ↑ | Latency ↓ |
 |----------------------|----------------------------|------------|--------|---------|-----------|
@@ -249,12 +249,6 @@ Download the [ImageNet-1K](http://image-net.org/) dataset and structure the data
 
 #### Model Preparation (MambaVision)
 To test the approach on MambaVision, you shall copy the contents of [this folder](https://github.com/NVlabs/MambaVision/tree/main/mambavision/models) to the models/mambavision folder of this repository. You may also add other model sources into the *models* folder.
-
-## Evaluation
-Run the following command to evaluate a pre-trained SHViT-S4 on ImageNet-1K validation set with a single GPU:
-```bash
-python main.py --eval --model shvit_s4 --resume ./shvit_s4.pth --data-path $PATH_TO_IMAGENET --input-size 256
-```
 
 ## Citation
 If our work or code help your work, please cite our paper:
